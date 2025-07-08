@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom select dropdown styling */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1em;
+            padding-right: 2.5rem;
+        }
+        
+        /* Hide number input arrows */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        
+        /* Custom scrollbar for dropdowns */
+        select::-ms-expand {
+            display: none;
+        }
+        
+        /* Hover effects for table rows */
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background-color: #f9fafb;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .drag-drop-zone {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.2s ease;
+        }
+        .drag-drop-zone:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+        .workflow-node {
+            transition: transform 0.2s;
+        }
+        .workflow-node:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Simple Header -->
+        <header class="mb-8">
+            <div class="flex items-center space-x-4">
+                <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">CRM Dashboard</h1>
+            </div>
+        </header>
+
+        <!-- Top Section: Three Columns -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Lead Creation Card -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Lead Creation</h2>
+                <form id="leadForm">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                            <div class="space-y-1">
+                                <div class="flex space-x-2">
+                                    <div class="relative w-1/3">
+                                        <div class="relative">
+                                            <input type="text" id="countrySearch" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Search country...">
+                                            <div id="countryDropdown" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"></div>
+                                        </div>
+                                        <select id="countryCode" class="hidden">
+                                        <option value="+93">Afghanistan (+93)</option>
+                                        <option value="+355">Albania (+355)</option>
+                                        <option value="+213">Algeria (+213)</option>
+                                        <option value="+1-684">American Samoa (+1 684)</option>
+                                        <option value="+376">Andorra (+376)</option>
+                                        <option value="+244">Angola (+244)</option>
+                                        <option value="+1-264">Anguilla (+1 264)</option>
+                                        <option value="+1-268">Antigua and Barbuda (+1 268)</option>
+                                        <option value="+54">Argentina (+54)</option>
+                                        <option value="+374">Armenia (+374)</option>
+                                        <option value="+297">Aruba (+297)</option>
+                                        <option value="+61">Australia (+61)</option>
+                                        <option value="+43">Austria (+43)</option>
+                                        <option value="+994">Azerbaijan (+994)</option>
+                                        <option value="+1-242">Bahamas (+1 242)</option>
+                                        <option value="+973">Bahrain (+973)</option>
+                                        <option value="+880">Bangladesh (+880)</option>
+                                        <option value="+1-246">Barbados (+1 246)</option>
+                                        <option value="+375">Belarus (+375)</option>
+                                        <option value="+32">Belgium (+32)</option>
+                                        <option value="+501">Belize (+501)</option>
+                                        <option value="+229">Benin (+229)</option>
+                                        <option value="+1-441">Bermuda (+1 441)</option>
+                                        <option value="+975">Bhutan (+975)</option>
+                                        <option value="+591">Bolivia (+591)</option>
+                                        <option value="+387">Bosnia & Herzegovina (+387)</option>
+                                        <option value="+267">Botswana (+267)</option>
+                                        <option value="+55">Brazil (+55)</option>
+                                        <option value="+673">Brunei (+673)</option>
+                                        <option value="+359">Bulgaria (+359)</option>
+                                        <option value="+226">Burkina Faso (+226)</option>
+                                        <option value="+257">Burundi (+257)</option>
+                                        <option value="+855">Cambodia (+855)</option>
+                                        <option value="+237">Cameroon (+237)</option>
+                                        <option value="+1">Canada (+1)</option>
+                                        <option value="+238">Cape Verde (+238)</option>
+                                        <option value="+1-345">Cayman Islands (+1 345)</option>
+                                        <option value="+236">Central African Republic (+236)</option>
+                                        <option value="+235">Chad (+235)</option>
+                                        <option value="+56">Chile (+56)</option>
+                                        <option value="+86">China (+86)</option>
+                                        <option value="+57">Colombia (+57)</option>
+                                        <option value="+269">Comoros (+269)</option>
+                                        <option value="+242">Congo (Rep.) (+242)</option>
+                                        <option value="+243">Congo (DRC) (+243)</option>
+                                        <option value="+682">Cook Islands (+682)</option>
+                                        <option value="+506">Costa Rica (+506)</option>
+                                        <option value="+225">Côte d'Ivoire (+225)</option>
+                                        <option value="+385">Croatia (+385)</option>
+                                        <option value="+53">Cuba (+53)</option>
+                                        <option value="+599">Curaçao (+599)</option>
+                                        <option value="+357">Cyprus (+357)</option>
+                                        <option value="+420">Czech Republic (+420)</option>
+                                        <option value="+45">Denmark (+45)</option>
+                                        <option value="+253">Djibouti (+253)</option>
+                                        <option value="+1-767">Dominica (+1 767)</option>
+                                        <option value="+1-809">Dominican Republic (+1 809/829/849)</option>
+                                        <option value="+593">Ecuador (+593)</option>
+                                        <option value="+20">Egypt (+20)</option>
+                                        <option value="+503">El Salvador (+503)</option>
+                                        <option value="+240">Equatorial Guinea (+240)</option>
+                                        <option value="+291">Eritrea (+291)</option>
+                                        <option value="+372">Estonia (+372)</option>
+                                        <option value="+251">Ethiopia (+251)</option>
+                                        <option value="+500">Falkland Islands (+500)</option>
+                                        <option value="+679">Fiji (+679)</option>
+                                        <option value="+358">Finland (+358)</option>
+                                        <option value="+33">France (+33)</option>
+                                        <option value="+594">French Guiana (+594)</option>
+                                        <option value="+689">French Polynesia (+689)</option>
+                                        <option value="+241">Gabon (+241)</option>
+                                        <option value="+220">Gambia (+220)</option>
+                                        <option value="+995">Georgia (+995)</option>
+                                        <option value="+49">Germany (+49)</option>
+                                        <option value="+233">Ghana (+233)</option>
+                                        <option value="+30">Greece (+30)</option>
+                                        <option value="+299">Greenland (+299)</option>
+                                        <option value="+1-473">Grenada (+1 473)</option>
+                                        <option value="+502">Guatemala (+502)</option>
+                                        <option value="+224">Guinea (+224)</option>
+                                        <option value="+245">Guinea-Bissau (+245)</option>
+                                        <option value="+592">Guyana (+592)</option>
+                                        <option value="+509">Haiti (+509)</option>
+                                        <option value="+504">Honduras (+504)</option>
+                                        <option value="+852">Hong Kong (+852)</option>
+                                        <option value="+36">Hungary (+36)</option>
+                                        <option value="+354">Iceland (+354)</option>
+                                        <option value="+91" selected>India (+91)</option>
+                                        <option value="+62">Indonesia (+62)</option>
+                                        <option value="+98">Iran (+98)</option>
+                                        <option value="+964">Iraq (+964)</option>
+                                        <option value="+353">Ireland (+353)</option>
+                                        <option value="+972">Israel (+972)</option>
+                                        <option value="+39">Italy (+39)</option>
+                                        <option value="+1-876">Jamaica (+1 876)</option>
+                                        <option value="+81">Japan (+81)</option>
+                                        <option value="+962">Jordan (+962)</option>
+                                        <option value="+7">Kazakhstan (+7)</option>
+                                        <option value="+254">Kenya (+254)</option>
+                                        <option value="+686">Kiribati (+686)</option>
+                                        <option value="+850">Korea, North (+850)</option>
+                                        <option value="+82">Korea, South (+82)</option>
+                                        <option value="+383">Kosovo (+383)</option>
+                                        <option value="+965">Kuwait (+965)</option>
+                                        <option value="+996">Kyrgyzstan (+996)</option>
+                                        <option value="+856">Laos (+856)</option>
+                                        <option value="+371">Latvia (+371)</option>
+                                        <option value="+961">Lebanon (+961)</option>
+                                        <option value="+266">Lesotho (+266)</option>
+                                        <option value="+231">Liberia (+231)</option>
+                                        <option value="+218">Libya (+218)</option>
+                                        <option value="+423">Liechtenstein (+423)</option>
+                                        <option value="+370">Lithuania (+370)</option>
+                                        <option value="+352">Luxembourg (+352)</option>
+                                        <option value="+853">Macau (+853)</option>
+                                        <option value="+389">North Macedonia (+389)</option>
+                                        <option value="+261">Madagascar (+261)</option>
+                                        <option value="+265">Malawi (+265)</option>
+                                        <option value="+60">Malaysia (+60)</option>
+                                        <option value="+960">Maldives (+960)</option>
+                                        <option value="+223">Mali (+223)</option>
+                                        <option value="+356">Malta (+356)</option>
+                                        <option value="+222">Mauritania (+222)</option>
+                                        <option value="+230">Mauritius (+230)</option>
+                                        <option value="+52">Mexico (+52)</option>
+                                        <option value="+373">Moldova (+373)</option>
+                                        <option value="+377">Monaco (+377)</option>
+                                        <option value="+976">Mongolia (+976)</option>
+                                        <option value="+382">Montenegro (+382)</option>
+                                        <option value="+1-664">Montserrat (+1 664)</option>
+                                        <option value="+212">Morocco (+212)</option>
+                                        <option value="+258">Mozambique (+258)</option>
+                                        <option value="+95">Myanmar (+95)</option>
+                                        <option value="+264">Namibia (+264)</option>
+                                        <option value="+674">Nauru (+674)</option>
+                                        <option value="+977">Nepal (+977)</option>
+                                        <option value="+31">Netherlands (+31)</option>
+                                        <option value="+64">New Zealand (+64)</option>
+                                        <option value="+505">Nicaragua (+505)</option>
+                                        <option value="+227">Niger (+227)</option>
+                                        <option value="+234">Nigeria (+234)</option>
+                                        <option value="+47">Norway (+47)</option>
+                                        <option value="+968">Oman (+968)</option>
+                                        <option value="+92">Pakistan (+92)</option>
+                                        <option value="+680">Palau (+680)</option>
+                                        <option value="+970">Palestine (+970)</option>
+                                        <option value="+507">Panama (+507)</option>
+                                        <option value="+675">Papua New Guinea (+675)</option>
+                                        <option value="+595">Paraguay (+595)</option>
+                                        <option value="+51">Peru (+51)</option>
+                                        <option value="+63">Philippines (+63)</option>
+                                        <option value="+48">Poland (+48)</option>
+                                        <option value="+351">Portugal (+351)</option>
+                                        <option value="+1-787">Puerto Rico (+1 787/939)</option>
+                                        <option value="+974">Qatar (+974)</option>
+                                        <option value="+40">Romania (+40)</option>
+                                        <option value="+7">Russia (+7)</option>
+                                        <option value="+250">Rwanda (+250)</option>
+                                        <option value="+1-869">Saint Kitts & Nevis (+1 869)</option>
+                                        <option value="+1-758">Saint Lucia (+1 758)</option>
+                                        <option value="+1-784">Saint Vincent & the Grenadines (+1 784)</option>
+                                        <option value="+685">Samoa (+685)</option>
+                                        <option value="+378">San Marino (+378)</option>
+                                        <option value="+966">Saudi Arabia (+966)</option>
+                                        <option value="+221">Senegal (+221)</option>
+                                        <option value="+381">Serbia (+381)</option>
+                                        <option value="+248">Seychelles (+248)</option>
+                                        <option value="+232">Sierra Leone (+232)</option>
+                                        <option value="+65">Singapore (+65)</option>
+                                        <option value="+1-721">Sint Maarten (+1 721)</option>
+                                        <option value="+421">Slovakia (+421)</option>
+                                        <option value="+386">Slovenia (+386)</option>
+                                        <option value="+677">Solomon Islands (+677)</option>
+                                        <option value="+252">Somalia (+252)</option>
+                                        <option value="+27">South Africa (+27)</option>
+                                        <option value="+82">South Korea (+82)</option>
+                                        <option value="+211">South Sudan (+211)</option>
+                                        <option value="+34">Spain (+34)</option>
+                                        <option value="+94">Sri Lanka (+94)</option>
+                                        <option value="+249">Sudan (+249)</option>
+                                        <option value="+597">Suriname (+597)</option>
+                                        <option value="+46">Sweden (+46)</option>
+                                        <option value="+41">Switzerland (+41)</option>
+                                        <option value="+963">Syria (+963)</option>
+                                        <option value="+886">Taiwan (+886)</option>
+                                        <option value="+992">Tajikistan (+992)</option>
+                                        <option value="+255">Tanzania (+255)</option>
+                                        <option value="+66">Thailand (+66)</option>
+                                        <option value="+228">Togo (+228)</option>
+                                        <option value="+676">Tonga (+676)</option>
+                                        <option value="+1-868">Trinidad & Tobago (+1 868)</option>
+                                        <option value="+216">Tunisia (+216)</option>
+                                        <option value="+90">Turkey (+90)</option>
+                                        <option value="+993">Turkmenistan (+993)</option>
+                                        <option value="+1-649">Turks & Caicos Islands (+1 649)</option>
+                                        <option value="+688">Tuvalu (+688)</option>
+                                        <option value="+256">Uganda (+256)</option>
+                                        <option value="+380">Ukraine (+380)</option>
+                                        <option value="+971">United Arab Emirates (+971)</option>
+                                        <option value="+44">United Kingdom (+44)</option>
+                                        <option value="+1">United States (+1)</option>
+                                        <option value="+598">Uruguay (+598)</option>
+                                        <option value="+998">Uzbekistan (+998)</option>
+                                        <option value="+678">Vanuatu (+678)</option>
+                                        <option value="+58">Venezuela (+58)</option>
+                                        <option value="+84">Vietnam (+84)</option>
+                                        <option value="+967">Yemen (+967)</option>
+                                        <option value="+260">Zambia (+260)</option>
+                                        <option value="+263">Zimbabwe (+263)</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex-1 relative">
+                                        <input type="tel" id="phoneNumber" pattern="[0-9]*" inputmode="numeric" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="1234567890">
+                                        <div id="phoneError" class="hidden mt-1 text-sm text-red-600"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+                            Create Lead
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Document Upload Card -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Drag a PDF/PNG</h2>
+                <div class="relative">
+                    <div id="uploadContainer" class="drag-drop-zone rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div id="uploadContent" class="flex flex-col items-center justify-center space-y-2">
+                            <i class="fas fa-file-upload text-4xl text-gray-400"></i>
+                            <p class="text-gray-500">Drop a PDF/Image file here</p>
+                            <p class="text-sm text-gray-400">or click to browse</p>
+                        </div>
+                        <div id="progressContainer" class="hidden flex-col items-center justify-center">
+                            <div class="relative w-24 h-24 mb-4">
+                                <svg class="w-full h-full" viewBox="0 0 36 36">
+                                    <path
+                                        d="M18 2.0845
+                                            a 15.9155 15.9155 0 0 1 0 31.831
+                                            a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        fill="none"
+                                        stroke="#e6e6e6"
+                                        stroke-width="3"
+                                    />
+                                    <path
+                                        id="progressCircle"
+                                        d="M18 2.0845
+                                            a 15.9155 15.9155 0 0 1 0 31.831
+                                            a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        fill="none"
+                                        stroke="#3b82f6"
+                                        stroke-width="3"
+                                        stroke-dasharray="0, 100"
+                                        stroke-linecap="round"
+                                    />
+                                    <text x="18" y="20.5" text-anchor="middle" font-size="8" fill="#3b82f6" id="progressText">0%</text>
+                                </svg>
+                            </div>
+                            <p id="uploadStatus" class="text-sm text-gray-600">Uploading...</p>
+                            <p id="fileName" class="text-sm font-medium text-gray-800 truncate max-w-full"></p>
+                        </div>
+                    </div>
+                    <input id="fileInput" type="file" class="hidden" accept=".pdf,.png,.jpg,.jpeg">
+                    <button id="cancelUpload" class="hidden mt-2 text-sm text-red-600 hover:text-red-800">
+                        Cancel Upload
+                    </button>
+                </div>
+            </div>
+
+            <!-- Workflow Designer Card -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Workflow Designer</h2>
+                <div class="space-y-4">
+                    <div class="workflow-node bg-orange-100 text-orange-800 p-3 rounded-md text-center font-medium">
+                        Trigger: Lead Created
+                    </div>
+                    <div class="flex justify-center">
+                        <div class="h-8 w-0.5 bg-gray-300"></div>
+                    </div>
+                    <div class="flex justify-around">
+                        <div class="text-center">
+                            <div class="workflow-node bg-blue-100 text-blue-800 p-2 rounded-md font-medium mx-auto w-24">
+                                Interact
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="workflow-node bg-green-100 text-green-800 p-2 rounded-md font-medium mx-auto w-24">
+                                Update Status
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Section: Dashboard Table -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-xl font-semibold text-gray-800">Dashboard</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- Rows will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Popup -->
+    <div id="chatPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md h-[600px] flex flex-col">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">Chat with Assistant</h3>
+                <button onclick="closeChatPopup()" class="text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-4">
+                <!-- Welcome message -->
+                <div class="flex items-start">
+                    <div class="bg-gray-100 rounded-lg p-3 max-w-[80%]">
+                        <p class="text-sm text-gray-800">Hello! I'm your CRM assistant. You can ask me about lead details or request a follow-up suggestion.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex space-x-2">
+                    <input type="text" id="chatInput" placeholder="Type your message..." class="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500" onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button onclick="sendMessage()" class="w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add interactivity here
+        // Upload functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadContainer = document.getElementById('uploadContainer');
+            const uploadContent = document.getElementById('uploadContent');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressCircle = document.getElementById('progressCircle');
+            const progressText = document.getElementById('progressText');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const fileName = document.getElementById('fileName');
+            const cancelUpload = document.getElementById('cancelUpload');
+            
+            // Initialize progress circle
+            function initProgressCircle() {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', '18');
+                circle.setAttribute('cy', '18');
+                circle.setAttribute('r', '16');
+                circle.setAttribute('fill', 'none');
+                circle.setAttribute('stroke', '#e6e6e6');
+                circle.setAttribute('stroke-width', '3');
+                
+                const progress = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                progress.setAttribute('id', 'progressCircle');
+                progress.setAttribute('cx', '18');
+                progress.setAttribute('cy', '18');
+                progress.setAttribute('r', '16');
+                progress.setAttribute('fill', 'none');
+                progress.setAttribute('stroke', '#3b82f6');
+                progress.setAttribute('stroke-width', '3');
+                progress.setAttribute('stroke-dasharray', '0 100');
+                progress.setAttribute('stroke-linecap', 'round');
+                progress.setAttribute('transform', 'rotate(-90 18 18)');
+                
+                const svg = progressContainer.querySelector('svg');
+                if (svg) {
+                    svg.innerHTML = '';
+                    svg.appendChild(circle);
+                    svg.appendChild(progress);
+                    
+                    // Add text element for percentage
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', '18');
+                    text.setAttribute('y', '21');
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('font-size', '8');
+                    text.setAttribute('fill', '#3b82f6');
+                    text.setAttribute('id', 'progressText');
+                    text.textContent = '0%';
+                    svg.appendChild(text);
+                }
+            }
+            
+            // Initialize progress circle when the page loads
+            initProgressCircle();
+            
+            function setProgress(percent) {
+                const progressCircle = document.getElementById('progressCircle');
+                if (progressCircle) {
+                    const circumference = 2 * Math.PI * 16; // 2 * π * r (r = 16)
+                    const offset = circumference - (percent / 100) * circumference;
+                    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+                    progressCircle.style.strokeDashoffset = offset;
+                    
+                    const progressText = document.getElementById('progressText');
+                    if (progressText) {
+                        progressText.textContent = `${Math.round(percent)}%`;
+                    }
+                }
+            }
+            
+            function simulateFileUpload(file) {
+                if (!file) return;
+                
+                uploadContent.classList.add('hidden');
+                progressContainer.classList.remove('hidden');
+                cancelUpload.classList.remove('hidden');
+                fileName.textContent = file.name;
+                
+                let progress = 0;
+                setProgress(0);
+                
+                const interval = setInterval(() => {
+                    progress += Math.random() * 10;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(interval);
+                        uploadStatus.textContent = 'Upload Complete!';
+                        setTimeout(() => {
+                            resetUploadUI();
+                        }, 1500);
+                    }
+                    setProgress(progress);
+                }, 200);
+                
+                // Store the interval ID to clear it if upload is cancelled
+                uploadContainer.dataset.uploadInterval = interval;
+            }
+            
+            function resetUploadUI() {
+                uploadContent.classList.remove('hidden');
+                progressContainer.classList.add('hidden');
+                cancelUpload.classList.add('hidden');
+                if (fileInput) fileInput.value = '';
+                setProgress(0);
+                uploadStatus.textContent = 'Uploading...';
+            }
+            
+            // Handle file selection
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    if (this.files && this.files.length > 0) {
+                        simulateFileUpload(this.files[0]);
+                    }
+                });
+            }
+            
+            // Handle drag and drop
+            if (uploadContainer) {
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    uploadContainer.addEventListener(eventName, preventDefaults, false);
+                });
+                
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    uploadContainer.addEventListener(eventName, function() {
+                        this.classList.add('border-blue-500', 'bg-blue-50');
+                    }, false);
+                });
+                
+                ['dragleave', 'drop'].forEach(eventName => {
+                    uploadContainer.addEventListener(eventName, function() {
+                        this.classList.remove('border-blue-500', 'bg-blue-50');
+                    }, false);
+                });
+                
+                uploadContainer.addEventListener('drop', function(e) {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    if (files.length > 0) {
+                        if (fileInput) {
+                            fileInput.files = files;
+                            simulateFileUpload(files[0]);
+                        }
+                    }
+                }, false);
+                
+                // Click to select file
+                uploadContainer.addEventListener('click', function() {
+                    if (fileInput) fileInput.click();
+                }, false);
+            }
+            
+            // Cancel upload
+            if (cancelUpload) {
+                cancelUpload.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const intervalId = uploadContainer ? uploadContainer.dataset.uploadInterval : null;
+                    if (intervalId) {
+                        clearInterval(intervalId);
+                    }
+                    resetUploadUI();
+                }, false);
+            }
+        });
+        
+        // Chat functionality
+        let currentLead = null;
+        // Replace with your actual Groq API key in production
+        // const GROQ_API_KEY = 'your_groq_api_key_here';
+        
+        function openChatPopup(leadName = '', leadEmail = '', leadStatus = '') {
+            currentLead = {
+                name: leadName || 'John Doe',
+                email: leadEmail || 'john.doe@example.com',
+                status: leadStatus || 'New'
+            };
+            
+            // Reset chat messages
+            const messagesDiv = document.getElementById('chatMessages');
+            messagesDiv.innerHTML = `
+                <div class="flex items-start">
+                    <div class="bg-gray-100 rounded-lg p-3 max-w-[80%]">
+                        <p class="text-sm text-gray-800">Hello! I'm your CRM assistant. You can ask me about lead details or request a follow-up suggestion.</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('chatPopup').classList.remove('hidden');
+            document.getElementById('chatInput').focus();
+        }
+        
+        function closeChatPopup() {
+            document.getElementById('chatPopup').classList.add('hidden');
+            currentLead = null;
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message || !currentLead) return;
+            
+            // Add user message to chat
+            addMessage('user', message);
+            input.value = '';
+            
+            try {
+                // Show typing indicator
+                const typingId = 'typing-' + Date.now();
+                showTypingIndicator(typingId);
+                
+                // Process the message directly in JavaScript for better reliability
+                setTimeout(() => {
+                    // Remove typing indicator
+                    removeTypingIndicator(typingId);
+                    
+                    let botResponse = '';
+                    const query = message.toLowerCase().trim();
+                    
+                    // Handle different query types
+                    if (query.includes('lead detail') || query.includes('details')) {
+                        botResponse = `Name: ${currentLead.name}, Email: ${currentLead.email}, Status: ${currentLead.status}`;
+                    } 
+                    else if (query.includes('follow') || query.includes('follow up') || query.includes('follow-up')) {
+                        if (currentLead.status === 'New') {
+                            botResponse = `Email ${currentLead.name} at ${currentLead.email}.`;
+                        } else if (currentLead.status === 'Contacted') {
+                            botResponse = `Follow up with ${currentLead.name} at ${currentLead.email} to check if they've responded.`;
+                        } else {
+                            botResponse = `Email ${currentLead.name} at ${currentLead.email}.`;
+                        }
+                    } 
+                    else {
+                        botResponse = 'Ask about follow-up or details.';
+                    }
+                    
+                    // Add bot response to chat
+                    addMessage('bot', botResponse);
+                }, 500); // Simulate API delay
+                
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('bot', 'Something went wrong. Please try again.');
+                
+                // Remove typing indicator in case of error
+                const typingIndicators = document.querySelectorAll('.typing-indicator');
+                typingIndicators.forEach(indicator => indicator.remove());
+            }
+        }
+        
+        function showTypingIndicator(id) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = id;
+            typingDiv.className = 'typing-indicator flex items-start mb-4';
+            typingDiv.innerHTML = `
+                <div class="bg-gray-100 rounded-lg p-3 max-w-[80%]">
+                    <div class="flex space-x-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(typingDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function removeTypingIndicator(id) {
+            const typingIndicator = document.getElementById(id);
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        function addMessage(sender, text) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`;
+            
+            messageDiv.innerHTML = `
+                <div class="${sender === 'user' ? 'message-user' : 'message-bot'} p-3 max-w-[80%] text-sm">
+                    ${text}
+                </div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Allow sending message with Enter key
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Close popup when clicking outside
+        document.getElementById('chatPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeChatPopup();
+            }
+        });
+
+        // Prevent default behavior for drag and drop
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Initialize when DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Form submission
+            document.getElementById('leadForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Set flag to show errors on submission attempt
+                hasSubmitted = true;
+                
+                const name = this.querySelector('input[type="text"]').value.trim();
+                const email = this.querySelector('input[type="email"]').value.trim();
+                const countryCode = document.getElementById('countryCode').value;
+                const phoneNumber = document.getElementById('phoneNumber').value.trim();
+                const fullPhone = phoneNumber ? `${countryCode} ${phoneNumber}` : 'N/A';
+                
+                // Validate required fields
+                if (!name || !email) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+                
+                // Validate phone number
+                if (!validatePhoneNumber(true)) {
+                    // Scroll to the error message
+                    phoneNumberInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+                
+                // Create new row in the table
+                const tbody = document.querySelector('tbody');
+                const newRow = document.createElement('tr');
+                newRow.className = 'hover:bg-gray-50';
+                newRow.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <span class="text-blue-600 font-medium">${name.substring(0, 2).toUpperCase()}</span>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${name}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${email}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 phone-number">${fullPhone}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 cursor-pointer hover:bg-green-200 transition-colors status-badge">
+                            New
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Manual</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <button onclick="openChatPopup('${name}', '${email}', 'New')" class="w-10 h-10 flex items-center justify-center text-blue-600 hover:text-blue-800 rounded-full hover:bg-blue-50 transition-all duration-200" title="Message">
+                            <i class="fas fa-comment text-xl"></i>
+                        </button>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button class="text-red-600 hover:text-red-900 delete-row">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                `;
+                
+                // Add to the beginning of the table
+                tbody.insertBefore(newRow, tbody.firstChild);
+                
+                // Add event listener for delete button
+                newRow.querySelector('.delete-row').addEventListener('click', function() {
+                    this.closest('tr').remove();
+                });
+                
+                // Add click event listener to status badge
+                const statusBadge = newRow.querySelector('.status-badge');
+                statusBadge.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const currentStatus = this.textContent.trim();
+                    const newStatus = currentStatus === 'New' ? 'Contacted' : 'New';
+                    
+                    // Update the status display
+                    this.textContent = newStatus;
+                    
+                    // Update the status styling based on the new status
+                    if (newStatus === 'Contacted') {
+                        this.className = 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 transition-colors status-badge';
+                    } else {
+                        this.className = 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 cursor-pointer hover:bg-green-200 transition-colors status-badge';
+                    }
+                });
+                
+                // Reset form
+                this.reset();
+            });
+            
+            // Phone number validation by country code
+            const phoneNumberInput = document.getElementById('phoneNumber');
+            const phoneError = document.getElementById('phoneError');
+            let hasSubmitted = false;
+
+            // Country code to digit length mapping
+            const countryPhoneRules = {
+                // 10 digits
+                'in': 10, 'us': 10, 'ca': 10, 'pk': 10, 'bd': 10, 'ru': 10, 'mx': 10,
+                'jp': 10, 'ph': 10, 'eg': 10, 'ir': 10, 'tr': 10, 'de': 10, 'gb': 10,
+                'it': 10, 'ke': 10, 'co': 10, 'kr': 10, 'np': 10, 'ro': 10, 'kz': 10,
+                'do': 10, 'gr': 10, 'at': 10, 'ly': 10,
+                
+                // 9 digits
+                'vn': 9, 'th': 9, 'za': 9, 'es': 9, 'dz': 9, 'af': 9, 'pl': 9, 'sa': 9,
+                'ua': 9, 'ye': 9, 'pe': 9, 'gh': 9, 'cm': 9, 'au': 9, 'tw': 9, 'sy': 9,
+                'zm': 9, 'cl': 9, 'ec': 9, 'nl': 9, 'kh': 9, 'zw': 9, 'bj': 9, 'be': 9,
+                'jo': 9, 'cz': 9, 'hu': 9,
+                
+                // 8 digits
+                'ng': 8, 'mm': 8, 'ne': 8, 'ml': 8, 'bf': 8, 'td': 8, 'so': 8, 'gt': 8,
+                'tn': 8, 'hn': 8, 'tg': 8, 'hk': 8, 'rs': 8, 'ni': 8, 'sv': 8, 'sg': 8,
+                'dk': 8, 'no': 8, 'cr': 8, 'om': 8, 'pa': 8, 'kw': 8,
+                
+                // 7 digits
+                'my': 7, 've': 7, 'lk': 7, 'se': 7, 'lr': 7, 'lb': 7, 'ga': 7, 'sb': 7,
+                'mv': 7, 'bz': 7, 'fm': 7, 'aw': 7, 'mh': 7, 'pw': 7,
+                
+                // 6 digits
+                'tz': 6, 'pf': 6, 'nc': 6, 'gl': 6,
+                
+                // 5 digits
+                'ws': 5, 'fo': 5, 'ck': 5,
+                
+                // 4 digits
+                'tk': 4, 'nu': 4
+            };
+
+            function validatePhoneNumber(showError = hasSubmitted) {
+                const countryCode = document.getElementById('countryCode').value.toLowerCase();
+                const phoneNumber = phoneNumberInput.value.replace(/[^0-9]/g, '');
+                
+                // Get country code (e.g., 'us' from '+1')
+                const countryIso = Object.keys(countryPhoneRules).find(code => 
+                    countryCode.endsWith(code) || 
+                    countryCode.includes(code)
+                );
+                
+                if (countryIso) {
+                    const requiredLength = countryPhoneRules[countryIso];
+                    if (phoneNumber.length !== requiredLength) {
+                        if (showError) {
+                            phoneError.innerHTML = `
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>Phone number must be ${requiredLength} digits for this country</span>
+                                </div>
+                            `;
+                            phoneError.classList.remove('hidden');
+                        }
+                        return false;
+                    }
+                } else if (phoneNumber.length > 0 && (phoneNumber.length < 4 || phoneNumber.length > 15)) {
+                    if (showError) {
+                        phoneError.innerHTML = `
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span>Phone number must be between 4 and 15 digits</span>
+                            </div>
+                        `;
+                        phoneError.classList.remove('hidden');
+                    }
+                    return false;
+                }
+                
+                phoneError.classList.add('hidden');
+                return true;
+            }
+
+            // Only allow numbers
+            phoneNumberInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+                validatePhoneNumber(false); // Don't show error on input, just validate
+            });
+
+            // Validate on country code change
+            document.getElementById('countryCode').addEventListener('change', () => {
+                validatePhoneNumber(hasSubmitted); // Only show error if user has submitted
+            });
+
+            // Country code search functionality
+            const countrySearch = document.getElementById('countrySearch');
+            const countryDropdown = document.getElementById('countryDropdown');
+            const countrySelect = document.getElementById('countryCode');
+            
+            // Populate dropdown with all countries
+            function populateDropdown(searchTerm = '') {
+                const options = Array.from(countrySelect.options);
+                const filteredOptions = searchTerm 
+                    ? options.filter(opt => opt.text.toLowerCase().includes(searchTerm.toLowerCase()))
+                    : options;
+                
+                countryDropdown.innerHTML = '';
+                
+                if (filteredOptions.length === 0) {
+                    const noResult = document.createElement('div');
+                    noResult.className = 'px-4 py-2 text-gray-500';
+                    noResult.textContent = 'No countries found';
+                    countryDropdown.appendChild(noResult);
+                    return;
+                }
+                
+                filteredOptions.forEach(option => {
+                    const div = document.createElement('div');
+                    div.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+                    div.textContent = option.text;
+                    div.addEventListener('click', () => {
+                        countrySelect.value = option.value;
+                        countrySearch.value = option.text;
+                        countryDropdown.classList.add('hidden');
+                    });
+                    countryDropdown.appendChild(div);
+                });
+            }
+            
+            // Show dropdown when search input is focused
+            countrySearch.addEventListener('focus', () => {
+                populateDropdown();
+                countryDropdown.classList.remove('hidden');
+            });
+            
+            // Filter countries as user types
+            countrySearch.addEventListener('input', (e) => {
+                populateDropdown(e.target.value);
+            });
+            
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!countrySearch.contains(e.target) && !countryDropdown.contains(e.target)) {
+                    countryDropdown.classList.add('hidden');
+                }
+            });
+            
+            // Set initial value
+            const selectedOption = countrySelect.options[countrySelect.selectedIndex];
+            if (selectedOption) {
+                countrySearch.value = selectedOption.text;
+            }
+            
+            // Handle keyboard navigation
+            let selectedIndex = -1;
+            countrySearch.addEventListener('keydown', (e) => {
+                const items = countryDropdown.querySelectorAll('div');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                    updateSelection();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, -1);
+                    updateSelection();
+                } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                    e.preventDefault();
+                    items[selectedIndex].click();
+                }
+                
+                function updateSelection() {
+                    items.forEach((item, index) => {
+                        item.classList.toggle('bg-blue-100', index === selectedIndex);
+                    });
+                    
+                    if (selectedIndex >= 0) {
+                        items[selectedIndex].scrollIntoView({ block: 'nearest' });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
