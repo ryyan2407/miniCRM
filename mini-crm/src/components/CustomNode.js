@@ -4,43 +4,35 @@ import { FaPlay, FaEnvelope, FaSyncAlt } from 'react-icons/fa'; // Icons for dif
 
 const CustomNode = ({ data, type, isExecuting }) => {
     let icon;
-    let bgColor;
-    let borderColor;
-    let textColor = 'text-white';
+    let bgColor = 'bg-white';
+    let borderColor = 'border-gray-300';
+    let textColor = 'text-gray-900';
 
     switch (type) {
         case 'trigger':
-            icon = <FaPlay className="text-white" />;
-            bgColor = 'bg-blue-600';
-            borderColor = 'border-blue-800';
+            icon = <FaPlay className="text-gray-700" />;
             break;
         case 'action':
             if (data.label.includes('Email')) {
-                icon = <FaEnvelope className="text-white" />;
-                bgColor = 'bg-green-600';
-                borderColor = 'border-green-800';
+                icon = <FaEnvelope className="text-gray-700" />;
             } else if (data.label.includes('Status')) {
-                icon = <FaSyncAlt className="text-white" />;
-                bgColor = 'bg-orange-600';
-                borderColor = 'border-orange-800';
+                icon = <FaSyncAlt className="text-gray-700" />;
             }
             break;
         default:
-            icon = <FaPlay className="text-white" />;
-            bgColor = 'bg-gray-600';
-            borderColor = 'border-gray-800';
+            icon = <FaPlay className="text-gray-700" />;
     }
 
     return (
-        <div className={`p-4 shadow-lg rounded-lg ${bgColor} border ${borderColor} ${textColor} flex items-center ${isExecuting ? 'animate-pulse-glow' : ''}`}>
-            <Handle type="target" position={Position.Left} className="w-2.5 h-2.5 bg-white rounded-full border border-gray-400" />
+        <div className={`p-4 rounded-lg ${bgColor} border ${borderColor} ${textColor} flex items-center ${isExecuting ? 'animate-pulse-glow' : ''}`}>
+            <Handle type="target" position={Position.Left} className="w-2.5 h-2.5 bg-gray-300 rounded-full border border-gray-400" />
             <div className="flex items-center space-x-3">
-                <div className="w-7 h-7 flex items-center justify-center rounded-full bg-white bg-opacity-20">
+                <div className="w-7 h-7 flex items-center justify-center rounded-full bg-white">
                     {icon}
                 </div>
                 <div className="text-base font-medium">{data.label}</div>
             </div>
-            <Handle type="source" position={Position.Right} className="w-2.5 h-2.5 bg-white rounded-full border border-gray-400" />
+            <Handle type="source" position={Position.Right} className="w-2.5 h-2.5 bg-gray-300 rounded-full border border-gray-400" />
         </div>
     );
 };

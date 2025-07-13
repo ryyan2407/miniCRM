@@ -11,10 +11,7 @@ import ChatPopup from './components/ChatPopup';
 import './App.css'; // You can add any global styles here
 
 // Initial dummy data
-const INITIAL_LEADS = [
-    { id: 1, name: 'Jane Cooper', email: 'jane.cooper@example.com', phone: '+1 202-555-0174', status: 'Contacted', source: 'Manual' },
-    { id: 2, name: 'Cody Fisher', email: 'cody.fisher@example.com', phone: '+44 20-7946-0958', status: 'New', source: 'Document' }
-];
+const INITIAL_LEADS = [];
 
 function App() {
     const [leads, setLeads] = useState(INITIAL_LEADS);
@@ -31,13 +28,53 @@ function App() {
     }, []);
 
     const handleAddLead = (newLead) => {
-        // In a real app, you'd POST to a backend and then refresh.
-        // Here, we just add to our local state.
+        // Adds a single lead from the manual form
         setLeads(prevLeads => [{ ...newLead, id: Date.now() }, ...prevLeads]);
+        showToastMessage({ type: 'success', text: 'Lead created successfully!' });
     };
+
+    // --- THIS IS THE UPDATED FUNCTION ---
+    const handleLeadsExtracted = useCallback((extractedLeads) => {
+        // This function is now smarter. It handles responses from the backend,
+        // checks for duplicates, and uses the toast notification system.
+        
+        if (!extractedLeads || extractedLeads.length === 0) {
+            showToastMessage({ type: 'info', text: 'Document processed, but no leads with emails were found.' });
+            return;
+        }
+
+        // Format the leads from the backend before adding them to state
+        const formattedLeads = extractedLeads.map(lead => ({
+            id: `${lead.email}-${Date.now()}`, // Create a more stable unique ID
+            name: lead.name || 'N/A',
+            email: lead.email,
+            phone: lead.phone || 'N/A',
+            status: 'New',
+            source: 'Document'
+        }));
+
+        setLeads(prevLeads => {
+            // Get a set of all existing email addresses for quick lookup
+            const existingEmails = new Set(prevLeads.map(l => l.email));
+            
+            // Filter out any leads that are already in our CRM
+            const uniqueNewLeads = formattedLeads.filter(l => !existingEmails.has(l.email));
+            
+            // Provide feedback to the user via the toast system
+            if (uniqueNewLeads.length === 0) {
+                showToastMessage({ type: 'info', text: 'All leads found in the document are already in the CRM.' });
+            } else {
+                showToastMessage({ type: 'success', text: `Successfully added ${uniqueNewLeads.length} new lead(s)!` });
+            }
+            
+            // Return the new state, with unique new leads at the top
+            return [...uniqueNewLeads, ...prevLeads];
+        });
+    }, [showToastMessage]); // Dependency on showToastMessage
     
     const handleDeleteLead = (leadId) => {
         setLeads(prevLeads => prevLeads.filter(lead => lead.id !== leadId));
+        showToastMessage({ type: 'error', text: 'Lead deleted.' });
     };
 
     const handleUpdateStatus = (leadId, newStatus) => {
@@ -61,12 +98,12 @@ function App() {
     return (
         <div>
             <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-screen font-sans">
-                <div className="max-w-screen-xl mx-auto">
+                <div className="max-w-screen-xl mx-auto flex flex-col h-full">
                     <Header />
 
-                    <main className="space-y-8">
+                    <main className="space-y-8 flex-grow flex flex-col">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div className="lg:col-span-2">
+                            <div className="lg:col-span-2 flex-grow h-full">
                                 <DashboardTable 
                                     leads={leads}
                                     onDeleteLead={handleDeleteLead}
@@ -74,9 +111,10 @@ function App() {
                                     onOpenChat={handleOpenChat}
                                 />
                             </div>
-                            <div className="space-y-8">
+                            <div className="space-y-8 flex-grow flex flex-col h-full">
                                 <LeadForm onLeadAdded={handleAddLead} />
-                                <DocumentUploader />
+                                {/* The DocumentUploader now has the powerful handler it needs */}
+                                <DocumentUploader onLeadsExtracted={handleLeadsExtracted} />
                                 <ReactFlowProvider>
                                     <WorkflowDesigner showToastMessage={showToastMessage} />
                                 </ReactFlowProvider>

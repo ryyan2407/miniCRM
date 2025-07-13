@@ -84,9 +84,7 @@ const WorkflowDesigner = ({ showToastMessage }) => {
           ? { ...node, data: { ...node.data, isExecuting: true } }
           : { ...node, data: { ...node.data, isExecuting: false } }
       ));
-      console.log(`Node ${currentNode.id} (${currentNode.data.label}) isExecuting: true`);
       showToastMessage(`Executing: ${currentNode.data.label}`);
-      console.log(`Executing: ${currentNode.data.label}`);
       await new Promise(resolve => setTimeout(resolve, simulationDelay));
 
       const outgoingEdges = edges.filter(edge => edge.source === currentNode.id);
@@ -137,23 +135,23 @@ const WorkflowDesigner = ({ showToastMessage }) => {
 
   const containerClasses = isFullscreen
     ? 'fixed inset-0 z-50 bg-white p-4 flex flex-col'
-    : 'bg-white rounded-lg shadow-sm p-6 flex flex-col';
+    : 'bg-white rounded-lg p-6 flex flex-col';
 
   return (
     <div className={containerClasses}>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-900">Workflow Designer</h2>
         <div className="flex space-x-2">
-          <button onClick={() => addNode('trigger', 'Lead Created')} className="px-3 py-1 rounded-md bg-blue-500 text-white text-sm hover:bg-blue-600">
+          <button onClick={() => addNode('trigger', 'Lead Created')} className="px-3 py-1 rounded-md bg-gray-200 text-gray-800 text-sm hover:bg-gray-300">
             Add Trigger
           </button>
-          <button onClick={() => addNode('action', 'Send Email')} className="px-3 py-1 rounded-md bg-green-500 text-white text-sm hover:bg-green-600">
+          <button onClick={() => addNode('action', 'Send Email')} className="px-3 py-1 rounded-md bg-gray-200 text-gray-800 text-sm hover:bg-gray-300">
             Add Send Email
           </button>
-          <button onClick={() => addNode('action', 'Update Status')} className="px-3 py-1 rounded-md bg-orange-500 text-white text-sm hover:bg-orange-600">
+          <button onClick={() => addNode('action', 'Update Status')} className="px-3 py-1 rounded-md bg-gray-200 text-gray-800 text-sm hover:bg-gray-300">
             Add Update Status
           </button>
-          <button onClick={handleRunWorkflow} className="px-3 py-1 rounded-md bg-purple-500 text-white text-sm hover:bg-purple-600">
+          <button onClick={handleRunWorkflow} className="px-3 py-1 rounded-md bg-gray-200 text-gray-800 text-sm hover:bg-gray-300">
             Run Workflow
           </button>
           <button onClick={toggleFullscreen} className="text-gray-400 hover:text-gray-600 transition-colors" title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}>

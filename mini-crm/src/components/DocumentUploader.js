@@ -1,113 +1,119 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
+import apiClient from '../api/apiClient';
 
-const DocumentUploader = () => {
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
+// Pass the onLeadsExtracted prop from App.js
+const DocumentUploader = ({ onLeadsExtracted }) => {
+    const [uiState, setUiState] = useState('idle'); // 'idle', 'uploading', 'error', 'success'
     const [fileName, setFileName] = useState('');
-    const [isDragging, setIsDragging] = useState(false);
-
+    const [errorMessage, setErrorMessage] = useState('');
     const fileInputRef = useRef(null);
-    const uploadIntervalRef = useRef(null);
 
-    const resetUploader = useCallback(() => {
-        setIsUploading(false);
-        setUploadProgress(0);
+    const resetUploader = () => {
+        setUiState('idle');
         setFileName('');
-        if (uploadIntervalRef.current) {
-            clearInterval(uploadIntervalRef.current);
-            uploadIntervalRef.current = null;
-        }
-    }, []);
+        setErrorMessage('');
+    };
 
-    const simulateUpload = (file) => {
+    const handleFileSelect = async (file) => {
         if (!file) return;
 
+        setUiState('uploading');
         setFileName(file.name);
-        setIsUploading(true);
-        setUploadProgress(0);
+        setErrorMessage('');
 
-        uploadIntervalRef.current = setInterval(() => {
-            setUploadProgress(prevProgress => {
-                const newProgress = prevProgress + Math.random() * 20;
-                if (newProgress >= 100) {
-                    clearInterval(uploadIntervalRef.current);
-                    setTimeout(resetUploader, 1500);
-                    return 100;
-                }
-                return newProgress;
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await apiClient.post('/api/extract-leads', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
-        }, 300);
-    };
 
-    const handleFileSelect = (files) => {
-        if (files && files.length > 0) {
-            simulateUpload(files[0]);
+            onLeadsExtracted(response.data.leads);
+            
+            setUiState('success');
+            setTimeout(resetUploader, 2000); // Reset after 2 seconds on success
+
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            const message = error.response?.data?.detail || "Upload failed. Check the console and ensure the backend is running.";
+            setErrorMessage(message);
+            setUiState('error');
         }
     };
 
-    const handleClick = () => fileInputRef.current.click();
-    const handleFileChange = (e) => handleFileSelect(e.target.files);
-    const handleCancel = (e) => {
-        e.stopPropagation();
+    // --- Event Handlers for UI interaction ---
+    const handleClick = () => {
+      if (uiState === 'error') {
         resetUploader();
+      } else {
+        fileInputRef.current.click();
+      }
     };
-
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(true);
-    };
-    const handleDragLeave = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-    };
+    const handleFileChange = (e) => handleFileSelect(e.target.files[0]);
+    
+    // Drag and drop handlers
+    const handleDragOver = (e) => e.preventDefault();
     const handleDrop = (e) => {
         e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-        handleFileSelect(e.dataTransfer.files);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            handleFileSelect(e.dataTransfer.files[0]);
+            e.dataTransfer.clearData();
+        }
     };
-    
-    const circumference = 2 * Math.PI * 16;
-    const strokeDashoffset = circumference - (uploadProgress / 100) * circumference;
 
-    return (
-        <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900">Import Leads</h2>
-            <div
-                className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
-                onClick={handleClick}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-            >
-                {!isUploading ? (
-                    <div className="flex flex-col items-center justify-center space-y-2 text-gray-500">
-                        <i className="fa fa-cloud-upload fa-2x"></i>
-                        <p>Drop a PDF/Image here</p>
+    // --- Render logic based on state (No changes needed here) ---
+    const renderContent = () => {
+        switch (uiState) {
+            case 'uploading':
+                return (
+                    <div className="flex flex-col items-center justify-center space-y-2">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                        <p className="text-gray-600">Processing document...</p>
+                        <p className="text-sm font-medium text-gray-800 truncate max-w-full">{fileName}</p>
+                    </div>
+                );
+            case 'success':
+                return (
+                     <div className="flex flex-col items-center justify-center space-y-2">
+                        <i className="fas fa-check-circle text-4xl text-green-500"></i>
+                        <p className="text-gray-600">Success!</p>
+                        <p className="text-sm text-gray-500">New leads added to your dashboard.</p>
+                    </div>
+                );
+            case 'error':
+                return (
+                    <div className="flex flex-col items-center justify-center space-y-2 text-center">
+                        <i className="fas fa-times-circle text-4xl text-red-500"></i>
+                        <p className="text-gray-600 font-semibold">Upload Failed</p>
+                        <p className="text-sm text-red-600">{errorMessage}</p>
+                        <p className="text-xs text-gray-400 mt-2">Click to try again</p>
+                    </div>
+                );
+            case 'idle':
+            default:
+                return (
+                    <div className="flex flex-col items-center justify-center space-y-2">
+                        <i className="fas fa-file-upload text-4xl text-gray-400"></i>
+                        <p className="text-gray-500">Drop a PDF/Image file here</p>
                         <p className="text-sm text-gray-400">or click to browse</p>
                     </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center">
-                        <div className="relative w-20 h-20 mb-4">
-                            <svg className="w-full h-full" viewBox="0 0 36 36">
-                                <circle cx="18" cy="18" r="16" fill="none" className="stroke-current text-gray-200" strokeWidth="3" />
-                                <circle
-                                    cx="18" cy="18" r="16" fill="none"
-                                    className="stroke-current text-blue-600" strokeWidth="3"
-                                    strokeDasharray={circumference}
-                                    strokeDashoffset={strokeDashoffset}
-                                    strokeLinecap="round"
-                                    transform="rotate(-90 18 18)"
-                                />
-                                <text x="18" y="21" textAnchor="middle" className="text-sm font-semibold fill-current text-blue-600">{`${Math.round(uploadProgress)}%`}</text>
-                            </svg>
-                        </div>
-                        <p className="text-sm font-medium text-gray-800 truncate max-w-full">{fileName}</p>
-                        <p className="text-sm text-gray-500">{uploadProgress < 100 ? 'Uploading...' : 'Upload Complete!'}</p>
-                    </div>
-                )}
+                );
+        }
+    };
+
+    return (
+        <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Scan Document for Leads</h2>
+            <div
+                className="drag-drop-zone rounded-lg p-8 text-center cursor-pointer h-48 flex items-center justify-center"
+                onClick={handleClick}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+            >
+                {renderContent()}
             </div>
             <input
                 type="file"
@@ -115,12 +121,8 @@ const DocumentUploader = () => {
                 onChange={handleFileChange}
                 className="hidden"
                 accept=".pdf,.png,.jpg,.jpeg"
+                disabled={uiState === 'uploading'}
             />
-            {isUploading && (
-                <button onClick={handleCancel} className="mt-4 w-full text-sm text-center text-red-500 hover:text-red-700 font-medium transition-colors">
-                    Cancel
-                </button>
-            )}
         </div>
     );
 };

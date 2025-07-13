@@ -11,7 +11,7 @@ const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, style = {}, marker
 
   return (
     <>
-      <BaseEdge id={id} path={edgePath} style={{ ...style, strokeWidth: isExecuting ? 3 : 2, stroke: isExecuting ? '#10B981' : style.stroke }} markerEnd={markerEnd} className={isExecuting ? 'animate-pulse-glow' : ''} />
+      <BaseEdge id={id} path={edgePath} style={{ ...style, strokeWidth: isExecuting ? 3 : 2, stroke: isExecuting ? '#10B981' : '#9CA3AF' }} markerEnd={markerEnd} className={isExecuting ? 'animate-pulse-glow' : ''} />
       <EdgeLabelRenderer>
         <div
           style={{

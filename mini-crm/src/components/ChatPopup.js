@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import groqClient from '../api/groqClient';
 
 const ChatPopup = ({ lead, onClose }) => {
     const [isLlmMode, setIsLlmMode] = useState(false);
@@ -30,38 +31,53 @@ const ChatPopup = ({ lead, onClose }) => {
         setInputValue('');
         setIsTyping(true);
 
-        // Simulate bot response
-        setTimeout(() => {
-            let botResponse = '';
-            const query = userMessage.toLowerCase();
+        let botResponse = '';
+        const query = userMessage.toLowerCase();
 
-            if (isLlmMode) {
-                // LLM-like responses
-                if (query.includes('detail') || query.includes('summary')) {
-                    botResponse = `Of course. Here is a summary for ${lead.name}:\n\n- **Contact:** ${lead.email}, ${lead.phone}\n- **Status:** ${lead.status}\n- **Source:** ${lead.source}\n\nWould you like a suggestion for the next step?`;
-                } else if (query.includes('follow') || query.includes('suggestion') || query.includes('strategy')) {
-                    botResponse = `Based on the fact that ${lead.name}'s status is '${lead.status}', here is a suggested outreach strategy:\n\n**Action:** Send a follow-up email.\n**Tone:** Professional yet friendly.\n**Key Message:** Reiterate your value proposition and ask if they have any questions. I can help you draft this email.`;
-                } else if (query.includes('draft') || query.includes('email')) {
-                    botResponse = `Certainly. Here is a draft email to ${lead.name}:\n\n**Subject: Following Up**\n\nHi ${lead.name},\n\nI hope you're having a great week. I wanted to follow up on our recent interaction and see if you had any questions about our services.\n\nBest regards,\n\n[Your Name]`;
-                } else {
-                    botResponse = "I can provide detailed summaries, suggest outreach strategies, or draft emails. Please let me know how I can assist you.";
-                }
-            } else {
-                // Original simulated responses
-                if (query.includes('detail')) {
-                    botResponse = `Here are the details for ${lead.name}: Email is ${lead.email}, Phone is ${lead.phone}, and current status is ${lead.status}.`;
-                } else if (query.includes('follow') || query.includes('suggestion')) {
-                    botResponse = lead.status === 'New'
-                        ? `Suggestion: Send a personalized welcome email to ${lead.email}.`
-                        : `Suggestion: Follow up with ${lead.name} at ${lead.email}.`;
-                } else {
-                    botResponse = "I can help with lead details or follow-up suggestions. What would you like to know?";
-                }
-            }
+        if (isLlmMode) {
+            let systemMessage = `You are a helpful CRM assistant. Your responses should be concise and directly answer the user's query based on the provided lead information.
+Current lead details: Name: ${lead.name}, Email: ${lead.email}, Status: ${lead.status}.`;
             
+            if (query.includes('follow-up') || query.includes('follow up')) {
+                systemMessage += ` The user is asking for a follow-up suggestion. Respond with "Email ${lead.name} at ${lead.email}."`;
+            } else if (query.includes('lead details') || query.includes('details')) {
+                systemMessage += ` The user is asking for lead details. Respond with "Name: ${lead.name}, Email: ${lead.email}, Status: ${lead.status}."`;
+            } else {
+                systemMessage += ` The user's query is not directly about follow-up or lead details. Respond with a generic message: "Ask about follow-up or details."`;
+            }
+
+            const chatHistoryForGroq = [
+                { role: 'system', content: systemMessage },
+                ...messages.map(msg => ({
+                    role: msg.sender === 'user' ? 'user' : 'assistant',
+                    content: msg.text
+                })),
+                { role: 'user', content: userMessage }
+            ];
+
+            try {
+                botResponse = await groqClient.getChatCompletion(chatHistoryForGroq);
+            } catch (error) {
+                botResponse = "I'm sorry, I couldn't connect to the AI. Please check your API key or try again later.";
+            }
             setIsTyping(false);
             setMessages(prev => [...prev, { sender: 'bot', text: botResponse }]);
-        }, 1200);
+
+        } else {
+            // Simulated responses
+            if (query.includes('follow-up') || query.includes('follow up')) {
+                botResponse = `Email ${lead.name} at ${lead.email}.`;
+            } else if (query.includes('lead details') || query.includes('details')) {
+                botResponse = `Name: ${lead.name}, Email: ${lead.email}, Status: ${lead.status}.`;
+            } else {
+                botResponse = "Ask about follow-up or details.";
+            }
+            
+            setTimeout(() => {
+                setIsTyping(false);
+                setMessages(prev => [...prev, { sender: 'bot', text: botResponse }]);
+            }, 1200);
+        }
     };
 
     const handleKeyPress = (e) => {
