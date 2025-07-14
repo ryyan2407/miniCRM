@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import apiClient from '../api/apiClient';
 
-// Pass the onLeadsExtracted prop from App.js
+
 const DocumentUploader = ({ onLeadsExtracted }) => {
-    const [uiState, setUiState] = useState('idle'); // 'idle', 'uploading', 'error', 'success'
+    const [uiState, setUiState] = useState('idle'); 
     const [fileName, setFileName] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const fileInputRef = useRef(null);
@@ -34,7 +34,7 @@ const DocumentUploader = ({ onLeadsExtracted }) => {
             onLeadsExtracted(response.data.leads);
             
             setUiState('success');
-            setTimeout(resetUploader, 2000); // Reset after 2 seconds on success
+            setTimeout(resetUploader, 2000); 
 
         } catch (error) {
             console.error("Error uploading file:", error);
@@ -44,7 +44,7 @@ const DocumentUploader = ({ onLeadsExtracted }) => {
         }
     };
 
-    // --- Event Handlers for UI interaction ---
+    
     const handleClick = () => {
       if (uiState === 'error') {
         resetUploader();
@@ -54,7 +54,7 @@ const DocumentUploader = ({ onLeadsExtracted }) => {
     };
     const handleFileChange = (e) => handleFileSelect(e.target.files[0]);
     
-    // Drag and drop handlers
+    
     const handleDragOver = (e) => e.preventDefault();
     const handleDrop = (e) => {
         e.preventDefault();
@@ -64,7 +64,7 @@ const DocumentUploader = ({ onLeadsExtracted }) => {
         }
     };
 
-    // --- Render logic based on state (No changes needed here) ---
+    
     const renderContent = () => {
         switch (uiState) {
             case 'uploading':
