@@ -21,7 +21,6 @@ const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, style = {}, marker
           }}
           className="nodrag nopan"
         >
-          {/* You can add a label here if needed */}
         </div>
       </EdgeLabelRenderer>
     </>
