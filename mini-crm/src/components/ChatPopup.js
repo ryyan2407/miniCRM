@@ -8,7 +8,7 @@ const ChatPopup = ({ lead, onClose }) => {
     const [isTyping, setIsTyping] = useState(false);
     const chatContainerRef = useRef(null);
 
-    // Set initial message based on the mode
+    
     useEffect(() => {
         const initialMessage = isLlmMode
             ? `Hello! I am your advanced AI assistant. I can provide detailed summaries, suggest outreach strategies, or even draft an email for ${lead.name}. How can I help?`
@@ -16,7 +16,7 @@ const ChatPopup = ({ lead, onClose }) => {
         setMessages([{ sender: 'bot', text: initialMessage }]);
     }, [isLlmMode, lead.name]);
 
-    // Auto-scroll to the bottom when new messages are added
+    
     useEffect(() => {
         if (chatContainerRef.current) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -64,7 +64,7 @@ Current lead details: Name: ${lead.name}, Email: ${lead.email}, Status: ${lead.s
             setMessages(prev => [...prev, { sender: 'bot', text: botResponse }]);
 
         } else {
-            // Simulated responses
+            
             if (query.includes('follow-up') || query.includes('follow up')) {
                 botResponse = `Email ${lead.name} at ${lead.email}.`;
             } else if (query.includes('lead details') || query.includes('details')) {
