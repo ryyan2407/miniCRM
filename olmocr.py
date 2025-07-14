@@ -42,7 +42,7 @@ class OlmOCRProcessor:
             quantization_config = BitsAndBytesConfig(load_in_8bit=True)
 
         print("Loading olmOCR model...")
-        # Get secrets from environment variables
+        
         hf_token = os.environ.get("HF_TOKEN")
         if not hf_token:
             raise ValueError("HF_TOKEN environment variable not set!")
