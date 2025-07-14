@@ -8,9 +8,8 @@ import DocumentUploader from './components/DocumentUploader';
 import WorkflowDesigner from './components/WorkflowDesigner';
 import DashboardTable from './components/DashboardTable';
 import ChatPopup from './components/ChatPopup';
-import './App.css'; // You can add any global styles here
+import './App.css';
 
-// Initial dummy data
 const INITIAL_LEADS = [];
 
 function App() {
@@ -28,24 +27,17 @@ function App() {
     }, []);
 
     const handleAddLead = (newLead) => {
-        // Adds a single lead from the manual form
         setLeads(prevLeads => [{ ...newLead, id: Date.now() }, ...prevLeads]);
         showToastMessage({ type: 'success', text: 'Lead created successfully!' });
     };
 
-    // --- THIS IS THE UPDATED FUNCTION ---
     const handleLeadsExtracted = useCallback((extractedLeads) => {
-        // This function is now smarter. It handles responses from the backend,
-        // checks for duplicates, and uses the toast notification system.
-        
         if (!extractedLeads || extractedLeads.length === 0) {
             showToastMessage({ type: 'info', text: 'Document processed, but no leads with emails were found.' });
             return;
         }
-
-        // Format the leads from the backend before adding them to state
         const formattedLeads = extractedLeads.map(lead => ({
-            id: `${lead.email}-${Date.now()}`, // Create a more stable unique ID
+            id: `${lead.email}-${Date.now()}`,
             name: lead.name || 'N/A',
             email: lead.email,
             phone: lead.phone || 'N/A',
@@ -54,23 +46,16 @@ function App() {
         }));
 
         setLeads(prevLeads => {
-            // Get a set of all existing email addresses for quick lookup
             const existingEmails = new Set(prevLeads.map(l => l.email));
-            
-            // Filter out any leads that are already in our CRM
             const uniqueNewLeads = formattedLeads.filter(l => !existingEmails.has(l.email));
-            
-            // Provide feedback to the user via the toast system
             if (uniqueNewLeads.length === 0) {
                 showToastMessage({ type: 'info', text: 'All leads found in the document are already in the CRM.' });
             } else {
                 showToastMessage({ type: 'success', text: `Successfully added ${uniqueNewLeads.length} new lead(s)!` });
             }
-            
-            // Return the new state, with unique new leads at the top
             return [...uniqueNewLeads, ...prevLeads];
         });
-    }, [showToastMessage]); // Dependency on showToastMessage
+    }, [showToastMessage]);
     
     const handleDeleteLead = (leadId) => {
         setLeads(prevLeads => prevLeads.filter(lead => lead.id !== leadId));
@@ -113,7 +98,6 @@ function App() {
                             </div>
                             <div className="space-y-8 flex-grow flex flex-col h-full">
                                 <LeadForm onLeadAdded={handleAddLead} />
-                                {/* The DocumentUploader now has the powerful handler it needs */}
                                 <DocumentUploader onLeadsExtracted={handleLeadsExtracted} />
                                 <ReactFlowProvider>
                                     <WorkflowDesigner showToastMessage={showToastMessage} />
