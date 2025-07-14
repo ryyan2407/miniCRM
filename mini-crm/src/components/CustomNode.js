@@ -1,6 +1,6 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { FaPlay, FaEnvelope, FaSyncAlt } from 'react-icons/fa'; // Icons for different node types
+import { FaPlay, FaEnvelope, FaSyncAlt } from 'react-icons/fa'; 
 
 const CustomNode = ({ data, type, isExecuting }) => {
     let icon;
