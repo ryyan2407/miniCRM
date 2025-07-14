@@ -33,18 +33,18 @@ const WorkflowDesigner = ({ showToastMessage }) => {
       id: `node_${Date.now()}`,
       type,
       data: { label, isExecuting: false },
-      position: { x: Math.random() * 250, y: Math.random() * 250 }, // Random position for now
+      position: { x: Math.random() * 250, y: Math.random() * 250 }, 
     };
     setNodes((nds) => nds.concat(newNode));
   }, [nodes, setNodes, showToastMessage]);
 
   const handleRunWorkflow = useCallback(async () => {
-    // Reset all nodes and edges to not executing
+    
     setNodes(nds => nds.map(node => ({ ...node, data: { ...node.data, isExecuting: false } })));
     setEdges(eds => eds.map(edge => ({ ...edge, data: { ...edge.data, isExecuting: false } })));
-    await new Promise(resolve => setTimeout(resolve, 100)); // Small delay for state update to render
+    await new Promise(resolve => setTimeout(resolve, 100)); 
 
-    // 1. Validation: Check for exactly one trigger node
+    
     const triggerNodes = nodes.filter(node => node.type === 'trigger');
     if (triggerNodes.length !== 1) {
       showToastMessage('Workflow must have exactly one trigger node.');
@@ -52,7 +52,7 @@ const WorkflowDesigner = ({ showToastMessage }) => {
     }
     const triggerNode = triggerNodes[0];
 
-    // 2. Validation: Check for unconnected nodes (except the trigger if it has outgoing edges)
+    
     const connectedNodeIds = new Set();
     edges.forEach(edge => {
       connectedNodeIds.add(edge.source);
@@ -72,13 +72,13 @@ const WorkflowDesigner = ({ showToastMessage }) => {
       return;
     }
 
-    // 3. Visual Simulation: Highlight nodes and edges sequentially
+    
     console.log('--- Starting Workflow Simulation ---');
     let currentNode = triggerNode;
-    const simulationDelay = 700; // Milliseconds
+    const simulationDelay = 700; 
 
     while (currentNode) {
-      // Highlight current node
+      
       setNodes(nds => nds.map(node =>
         node.id === currentNode.id
           ? { ...node, data: { ...node.data, isExecuting: true } }
@@ -90,7 +90,7 @@ const WorkflowDesigner = ({ showToastMessage }) => {
       const outgoingEdges = edges.filter(edge => edge.source === currentNode.id);
 
       if (outgoingEdges.length > 0) {
-        // Highlight the edge leading to the next node
+        
         const nextEdge = outgoingEdges[0];
         setEdges(eds => eds.map(edge =>
           edge.id === nextEdge.id
@@ -103,11 +103,11 @@ const WorkflowDesigner = ({ showToastMessage }) => {
         const nextNodeId = nextEdge.target;
         currentNode = nodes.find(node => node.id === nextNodeId);
       } else {
-        currentNode = null; // End of path
+        currentNode = null; 
       }
     }
 
-    // Final reset: Turn off all highlights
+    
     setNodes(nds => nds.map(node => ({ ...node, data: { ...node.data, isExecuting: false } })));
     setEdges(eds => eds.map(edge => ({ ...edge, data: { ...edge.data, isExecuting: false } })));
     console.log('All nodes and edges reset to isExecuting: false');
@@ -118,9 +118,9 @@ const WorkflowDesigner = ({ showToastMessage }) => {
 
   const toggleFullscreen = () => {
     setIsFullscreen((prev) => !prev);
-    // Fit view when entering fullscreen
+    
     if (!isFullscreen) {
-      setTimeout(() => fitView(), 100); // Small delay to allow transition
+      setTimeout(() => fitView(), 100); 
     }
   };
 
