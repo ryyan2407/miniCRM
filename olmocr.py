@@ -31,14 +31,14 @@ class OlmOCRProcessor:
         print(f"Total GPU Memory: {gpu_memory_gb:.1f} GB")
 
         quantization_config = None
-        if gpu_memory_gb >= 15:
-            print("High memory GPU detected. Using 4-bit quantization.")
+        if gpu_memory_gb <= 15:
+            print("Low memory GPU detected. Using 4-bit quantization.")
             quantization_config = BitsAndBytesConfig(
                 load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16,
                 bnb_4bit_use_double_quant=True, bnb_4bit_quant_type="nf4"
             )
         else:
-            print("Standard memory GPU detected. Using 8-bit quantization.")
+            print("High memory GPU detected. Using 8-bit quantization.")
             quantization_config = BitsAndBytesConfig(load_in_8bit=True)
 
         print("Loading olmOCR model...")
