@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+transformers
+bitsandbytes
+accelerate
+sentencepiece
+Pillow
+torch
+torchvision
+torchaudio
+groq
+PyMuPDF
